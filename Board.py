@@ -1,6 +1,5 @@
 from White_Piece import WhitePiece
 from Black_Piece import BlackPiece
-from math import fabs
 from Square import Square
 from A_Star import AStarSearch
 import copy
@@ -9,6 +8,7 @@ import copy
 """
 board_width = 8
 board_length = 8
+
 
 class Board:
     # initiate Board class
@@ -131,39 +131,55 @@ class Board:
     # Method for massacre mode
     def massacre(self):
 
-        available_coods = self.check_takeable(self.black_pieces[0])
-        x_dir = available_coods[0]
-        y_dir = available_coods[1]
-        best_dir, piece_1, piece_2 = self.choose_best_dir(x_dir, y_dir)
+        for item in self.black_pieces:
 
-        # initialises A* Search Class
-        a_star_algo_1 = AStarSearch(self.squares, board_width, board_length)
+            available_coods = self.check_takeable(item)
+            x_dir = available_coods[0]
+            y_dir = available_coods[1]
+            best_dir, piece_1, piece_2 = self.choose_best_dir(x_dir, y_dir)
 
-        # Does A* search
+            # initialises A* Search Class
+            a_star_algo_1 = AStarSearch(self.squares, board_width, board_length)
 
-        self.squares = a_star_algo_1.search(self.squares[best_dir[1] * board_width + best_dir[0]],
-                           self.squares[piece_1.x * board_width + piece_1.y])
-        a_star_algo_2 = AStarSearch(self.squares, board_width, board_length)
-        self.squares = a_star_algo_2.search(self.squares[best_dir[3] * board_width + best_dir[2]],
-                           self.squares[piece_2.x * board_width + piece_2.y])
+            # Does A* search
+            self.squares, new_location = a_star_algo_1.search(self.squares[best_dir[1] * board_width + best_dir[0]],
+                                                self.squares[piece_1.x * board_width + piece_1.y])
 
+            self.update_pieces(new_location, piece_1)
+            self.squares, new_location = a_star_algo_1.search(self.squares[best_dir[3] * board_width + best_dir[2]],
+                                                self.squares[piece_2.x * board_width + piece_2.y])
+            self.update_pieces(new_location, piece_2)
 
+    def update_pieces(self, new_location, piece):
+
+        if new_location.value == "O":
+            self.squares[new_location.x * board_width + new_location.y].value = "O"
+
+            for item in self.white_pieces:
+                if item.x == piece.x and item.y == piece.y:
+                    item.x = new_location.x
+                    item.y = new_location.y
+
+            self.squares[piece.x * board_width + new_location.y].value = "-"
 
     # Check which of the two positions are available for taking the piece
     def check_takeable(self, bp):
-        board = self.board
+        squares = self.squares
         available_coods = []
 
         # Check if takeable in x direction
         if 1 <= bp.x <= 6:
             # Check if both spaces in x direction free
-            if board[bp.y][bp.x - 1] == "-" and board[bp.y][bp.x + 1] == "-":
+            if squares[(bp.x-1) * board_width + bp.y].value == "-" and \
+                    squares[(bp.x + 1) * board_width + bp.y].value == "-":
                 available_coods.append([bp.y, bp.x - 1, bp.y, bp.x + 1])
 
-            elif board[bp.y][bp.x - 1] == "-" and board[bp.y][bp.x + 1] == "O":
+            elif squares[(bp.x-1) * board_width + bp.y].value == "O" and \
+                    squares[(bp.x + 1) * board_width + bp.y].value =="-":
                 available_coods.append([bp.y, bp.x - 1, bp.y, bp.x + 1])
 
-            elif board[bp.y][bp.x - 1] == "O" and board[bp.y][bp.x + 1] == "-":
+            elif squares[(bp.x-1) * board_width + bp.y].value == "-" and \
+                    squares[(bp.x + 1) * board_width + bp.y].value =="O":
                 available_coods.append([bp.y, bp.x - 1, bp.y, bp.x + 1])
             else:
                 available_coods.append([])
@@ -171,14 +187,17 @@ class Board:
         # Check if takeable in y direction
         if 1 <= bp.y <= 6:
             # Check if both spaces in y direction free
-            if board[bp.y - 1][bp.x] == "-" and board[bp.y + 1][bp.x] == "-":
+            if squares[bp.x * board_width + (bp.y - 1)].value == "-" and \
+                    squares[bp.x * board_width + (bp.y + 1)].value =="-":
                 available_coods.append([bp.y - 1, bp.x, bp.y + 1, bp.x])
 
             # Check if one space already covered by white piece and other free
-            elif board[bp.y - 1][bp.x] == "-" and board[bp.y + 1][bp.x] == "O":
+            elif squares[bp.x * board_width + (bp.y - 1)].value == "O" and \
+                    squares[bp.x * board_width + (bp.y + 1)].value =="-":
                 available_coods.append([bp.y - 1, bp.x, bp.y + 1, bp.x])
 
-            elif board[bp.y - 1][bp.x] == "O" and board[bp.y + 1][bp.x] == "-":
+            elif squares[bp.x * board_width + (bp.y - 1)].value == "-" and \
+                    squares[bp.x * board_width + (bp.y + 1)].value =="O":
                 available_coods.append([bp.y - 1, bp.x, bp.y + 1, bp.x])
 
             else:
@@ -215,6 +234,9 @@ class Board:
 
         else:
             return y_dir, piece3, piece4
+
+
+
 
 
 
