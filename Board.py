@@ -13,11 +13,11 @@ board_length = 8
 class Board:
     # initiate Board class
     def __init__(self):
-        self.board = [] # holds board string
+        self.board = []  # holds board string
         self.mode = ""
         self.white_pieces = []
         self.black_pieces = []
-        self.squares = [] # holds square class for A* search
+        self.squares = []  # holds square class for A* search
 
     # Populate board with input string
     def populate_board(self):
@@ -143,32 +143,31 @@ class Board:
 
             # initialises A* Search Class
             a_star_algo = AStarSearch(board_width, board_length)
-
+            # keeps copy of current pieces original location
+            old_x, old_y = piece_1.x, piece_1.y
             # Does A* search
-            self.squares, new_location = a_star_algo.search(self.squares[best_dir[1] * board_width + best_dir[0]],
+            new_location = a_star_algo.search(self.squares[best_dir[1] * board_width + best_dir[0]],
                                                 self.squares[piece_1.x * board_width + piece_1.y], self.squares)
-
-            self.update_pieces(new_location, piece_1)
-
-            self.squares, new_location = a_star_algo.search(self.squares[best_dir[3] * board_width + best_dir[2]],
+            # Updates board
+            self.update_pieces(new_location, old_x, old_y)
+            # keeps copy of current pieces original location
+            old_x, old_y = piece_2.x, piece_2.y
+            new_location = a_star_algo.search(self.squares[best_dir[3] * board_width + best_dir[2]],
                                                 self.squares[piece_2.x * board_width + piece_2.y], self.squares)
-            self.update_pieces(new_location, piece_2)
 
-            #self.squares[item.x * board_width + item.y].value = "-"
+            self.update_pieces(new_location, old_x, old_y)
+            # removes dead black piece
+            self.squares[item.x * board_width + item.y].value = "-"
 
-            #print(self.squares[item.x * board_width + item.y].value)
+    def update_pieces(self, new_location, old_x, old_y):
 
-    def update_pieces(self, new_location, piece):
+        self.squares[new_location.x * board_width + new_location.y].value = "O"
+        for item in self.white_pieces:
+            if item.x == old_x and item.y == old_y:
+                item.x = new_location.x
+                item.y = new_location.y
 
-        if new_location.value == "O":
-            self.squares[new_location.x * board_width + new_location.y].value = "O"
-
-            for item in self.white_pieces:
-                if item.x == piece.x and item.y == piece.y:
-                    item.x = new_location.x
-                    item.y = new_location.y
-
-            self.squares[piece.x * board_width + new_location.y].value = "-"
+        self.squares[old_x * board_width + old_y].value = "-"
 
     # Check which of the two positions are available for taking the piece
     def check_takeable(self, bp):
@@ -187,23 +186,23 @@ class Board:
                 available_coods[0] = [bp.y, bp.x - 1, bp.y, bp.x + 1]
 
             elif squares[(bp.x-1) * board_width + bp.y].value == "-" and \
-                    squares[(bp.x + 1) * board_width + bp.y].value =="O":
+                    squares[(bp.x + 1) * board_width + bp.y].value == "O":
                 available_coods[0] = [bp.y, bp.x - 1, bp.y, bp.x + 1]
 
         # Check if takeable in y direction
         if 1 <= bp.y <= 6:
             # Check if both spaces in y direction free
             if squares[bp.x * board_width + (bp.y - 1)].value == "-" and \
-                    squares[bp.x * board_width + (bp.y + 1)].value =="-":
+                    squares[bp.x * board_width + (bp.y + 1)].value == "-":
                 available_coods[1] = [bp.y - 1, bp.x, bp.y + 1, bp.x]
 
             # Check if one space already covered by white piece and other free
             elif squares[bp.x * board_width + (bp.y - 1)].value == "O" and \
-                    squares[bp.x * board_width + (bp.y + 1)].value =="-":
+                    squares[bp.x * board_width + (bp.y + 1)].value == "-":
                 available_coods[1] = [bp.y - 1, bp.x, bp.y + 1, bp.x]
 
             elif squares[bp.x * board_width + (bp.y - 1)].value == "-" and \
-                    squares[bp.x * board_width + (bp.y + 1)].value =="O":
+                    squares[bp.x * board_width + (bp.y + 1)].value == "O":
                 available_coods[1] = [bp.y - 1, bp.x, bp.y + 1, bp.x]
 
         return available_coods

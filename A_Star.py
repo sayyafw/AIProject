@@ -1,8 +1,6 @@
 import heapq
 from math import fabs
 import copy
-from Square import Square
-
 
 class AStarSearch:
 
@@ -17,7 +15,7 @@ class AStarSearch:
         dist_y = fabs(y1 - y2)
         return dist_x + dist_y
 
-    #Issue in getSquare for move3 in massacre mode
+    # Issue in getSquare for move3 in massacre mode
     def get_square(self, x, y, squares):
         return squares[x * self.board_width + y]
 
@@ -31,31 +29,31 @@ class AStarSearch:
         adj_down = self.get_square(square.x, square.y + 1, squares)
 
         if square.x > 0:
-            if not self.blocked(adj_left):
+            if not self.blocked(adj_left, squares):
                 list_of_squares.append(adj_left)
 
-            elif 1 < square.x < 6 and not self.blocked(self.get_square(square.x - 2, square.y, squares)):
+            elif 1 < square.x < 6 and not self.blocked(self.get_square(square.x - 2, square.y, squares), squares):
                 list_of_squares.append(self.get_square(square.x - 2, square.y, squares))
 
         if square.y > 0:
-            if not self.blocked(adj_up):
+            if not self.blocked(adj_up, squares):
                 list_of_squares.append(adj_up)
 
-            elif 1 < square.y < 6 and not self.blocked(self.get_square(square.x, square.y - 2, squares)):
+            elif 1 < square.y < 6 and not self.blocked(self.get_square(square.x, square.y - 2, squares), squares):
                 list_of_squares.append(self.get_square(square.x, square.y - 2, squares))
 
         if square.x < self.board_width - 1:
-            if not self.blocked(adj_right):
+            if not self.blocked(adj_right, squares):
                 list_of_squares.append(adj_right)
 
-            elif 1 < square.x < 6 and not self.blocked(self.get_square(square.x + 2, square.y, squares)):
+            elif 1 < square.x < 6 and not self.blocked(self.get_square(square.x + 2, square.y, squares), squares):
                 list_of_squares.append(self.get_square(square.x + 2, square.y, squares))
 
         if square.y < self.board_width - 1:
-            if not self.blocked(adj_down):
+            if not self.blocked(adj_down, squares):
                 list_of_squares.append(adj_down)
 
-            elif 1 < square.x < 6 and not self.blocked(self.get_square(square.x, square.y + 2, squares)):
+            elif 1 < square.x < 6 and not self.blocked(self.get_square(square.x, square.y + 2, squares),squares):
                 list_of_squares.append(self.get_square(square.x, square.y + 2, squares))
 
         return list_of_squares
@@ -109,9 +107,8 @@ class AStarSearch:
 
             # Check for goal state
             if self.state(square, goal_square):
-                self.print_moves(square, start_square)
-                self.update_board(squares, square, start_square)
                 end_square = square
+                self.print_moves(square, start_square)
                 break
 
             # Gets list of adjacent squares to current
@@ -120,7 +117,7 @@ class AStarSearch:
             # Checks each of the adjacent squares for the best move
             for i in range(len(adjacent_squares)):
                 item = adjacent_squares[i]
-                if item not in visited and  not self.blocked(item):
+                if item not in visited and  not self.blocked(item, squares):
                     if (item.f, item) in unvisited:
 
                         # If adj cell is open, check if current
@@ -132,17 +129,10 @@ class AStarSearch:
                     else:
                         self.update_position_adjacent(square, item, goal_square)
                         heapq.heappush(unvisited, (item.f, item))
+        return end_square
 
-        return squares, end_square
-
-    def update_board(self, squares, end_square, start_square):
-        squares[end_square.x * self.board_width + end_square.y].set_value("O")
-        squares[start_square.x * self.board_width + start_square.y].set_value("-")
-
-
-    @staticmethod
-    def blocked(square):
-        if square.value !=  "-":
+    def blocked(self, square, squares):
+        if squares[square.x * self.board_width + square.y].value != "-":
             return True
         return False
 
