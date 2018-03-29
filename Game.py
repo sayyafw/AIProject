@@ -7,6 +7,7 @@ if __name__ == "__main__":
     board.read_board()
     if board.mode == "Moves":
         board.move()
+        #board.massacre()
 
-    print(board.closest_piece(board.black_pieces[0]))
-
+    else:
+        board.massacre()

@@ -1,180 +1,220 @@
 from White_Piece import WhitePiece
 from Black_Piece import BlackPiece
 from math import fabs
+from Square import Square
+from A_Star import AStarSearch
+import copy
 
+""" Board Class. Reads the board, stores board information
+"""
+board_width = 8
+board_length = 8
 
 class Board:
-
-    #initiate Board class
+    # initiate Board class
     def __init__(self):
-        self.board = []
+        self.board = [] # holds board string
         self.mode = ""
         self.white_pieces = []
         self.black_pieces = []
+        self.squares = [] # holds square class for A* search
 
-    #Populate board with input string
+    # Populate board with input string
     def populate_board(self):
         for i in range(0, 8):
             self.board.append(input())
             self.board[i] = self.board[i].split()
-
         self.mode = input()
 
-    #print board in list form
+    # print board in list form
     def print_board(self):
         for item in self.board:
             print(item)
 
-    #find where the black and white pieces are on the board
+    # find where the black and white pieces are on the board
     def read_board(self):
         board = self.board
-        print( "   ")
+        print("   ")
         self.print_board()
+
+        # Read the rows and columns of the board. Add each square to squares list. If white or black piece, add to
+        # requisite list
         for i in range(len(board)):
             for j in range(len(board[i])):
+                self.squares.append(Square(i, j, board[j][i]))
                 if board[i][j] == "O":
                     self.white_pieces.append(WhitePiece(j, i))
 
                 elif board[i][j] == "@":
                     self.black_pieces.append(BlackPiece(j, i))
 
-
-    def move(self):
-
-        total_moves_black = 0
-        total_moves_white = 0
-
-        for wp in self.white_pieecs:
-
-            total_moves_white += self.check_moves(wp)
-
-        print(total_moves_white)
-
-        for bp in self.black_pieces:
-            total_moves_black == self.check_moves(bp)
-
-        print(total_moves_black)
-
-
-    def check_moves(self, piece):
-
-        availables_moves = 0
-
-        if self.check_move(piece, piece.y_coordinate - 1, piece.x_coordinate) > 0:
-            availables_moves  += 1
-
-        if self.check_move(piece, piece.y_coordinate + 1, piece.x_coordinate) > 0:
-            availables_moves += 1
-
-        if self.check_move(piece,piece.y_coordinate, piece.x_coordinate - 1) > 0:
-            availables_moves += 1
-
-        if self.check_move(piece, piece.y_coordinate + 1, piece.x_coordinate + 1) > 0:
-            availables_moves += 1
-
-        return availables_moves
-
-    def check_move(self, piece, y, x):
-        
-
-    """"#find possible moves for white pieces
+    # find possible moves for white and black pieces
     def move(self):
         total_moves_white = 0
         total_moves_black = 0
 
-        for item in self.white_pieces:
-            total_moves_white += self.check_surroundings(item.x_coordinate, item.y_coordinate)
+        for white_item in self.white_pieces:
+            total_moves_white += self.check_surroundings(white_item.x, white_item.y)
 
         print(total_moves_white)
 
         for black_item in self.black_pieces:
-            total_moves_black += self.check_surroundings(item.x_coordinate, item.y_coordinate)
+            total_moves_black += self.check_surroundings(black_item.x, black_item.y)
 
         print(total_moves_black)
 
-    #check surrounding blocks for available moves
-    def check_surroundings(self, x_coordinate, y_coordinate):
+    # check surrounding blocks for available moves. For each impossible move found, subtract one possible move
+    def check_surroundings(self, x, y):
         board = self.board
         total_moves = 4
-        if x_coordinate ==0 or x_coordinate == 7:
-            total_moves-=1
 
-        if y_coordinate == 0 or y_coordinate == 7:
+        if x == 0 or x == 7:
             total_moves -= 1
 
-        if 1 <= x_coordinate <= 6:
-            if board[y_coordinate][x_coordinate + 1] != "-":
-                if board[y_coordinate][x_coordinate + 2] != "-":
+        if y == 0 or y == 7:
+            total_moves -= 1
+
+        if 1 <= x <= 6:
+            if board[y][x + 1] != "-":
+                # If this happens, means square cannot be jumped over or moved onto
+                if x > 5 or board[y][x + 2] != "-":
                     total_moves -= 1
 
-            if board[y_coordinate][x_coordinate - 1] != "-":
-                if  board[y_coordinate][x_coordinate - 2] != "-":
+            if board[y][x - 1] != "-":
+                # If this happens, means square cannot be jumped over or moved onto
+                if x < 2 or board[y][x - 2] != "-":
                     total_moves -= 1
 
-        if 1 <= y_coordinate <= 6:
+        if 1 <= y <= 6:
 
-            if board[y_coordinate + 1][x_coordinate] != "-":
-                if board[y_coordinate + 2][x_coordinate] != "-":
+            if board[y + 1][x] != "-":
+                # If this happens, means square cannot be jumped over or moved onto
+                if y > 5 or board[y + 2][x] != "-":
                     total_moves -= 1
 
-            if board[y_coordinate - 1][x_coordinate] != "-":
-                if board[y_coordinate - 2][x_coordinate] != "-":
+            if board[y - 1][x] != "-":
+                # If this happens, means square cannot be jumped over or moved onto
+                if y < 2 or board[y - 2][x] != "-":
                     total_moves -= 1
 
         return total_moves
 
-    #def massacre(self):
-
-
-    def manhattan_distance(self, black_piece, white_piece):
-
-        dist_x = fabs((black_piece.x_coordinate - white_piece.x_coordinate))
-        dist_y = fabs((black_piece.y_coordinate - white_piece.y_coordinate))
-        return dist_x + dist_y
-
-    # make piece 1 piece 2
-
-    def closest_piece(self, piece):
-
+    # Finds the two closest white pieces to a given coordinate. Smallest possible distance kept at min_dist_1
+    def closest_piece(self, x, y):
         white_pieces = self.white_pieces
 
-        if self.manhattan_distance(piece, white_pieces[0]) > self.manhattan_distance(piece, white_pieces[1]):
+        if AStarSearch.manhattan_distance(x, y, white_pieces[0].x, white_pieces[0].y) > \
+                AStarSearch.manhattan_distance(x, y, white_pieces[1].x, white_pieces[1].y):
 
             min_dist_1 = white_pieces[1]
             min_dist_2 = white_pieces[0]
 
         else:
-            min_dist_1 = white_pieces[1]
-            min_dist_2 = white_pieces[0]
+            min_dist_1 = white_pieces[0]
+            min_dist_2 = white_pieces[1]
 
         i = 2
 
         while i < len(self.white_pieces):
-            manhattan_dist = self.manhattan_distance(piece, white_pieces[i])
-            if manhattan_dist < self.manhattan_distance(piece, min_dist_2):
-                if manhattan_dist <  self.manhattan_distance(piece, min_dist_1):
-                    min_dist_2 = min_dist_1
+            manhattan_dist = AStarSearch.manhattan_distance(x, y, white_pieces[i].x, white_pieces[i].y)
+            if manhattan_dist < AStarSearch.manhattan_distance(x, y, min_dist_2.x, min_dist_2.y):
+                if manhattan_dist < AStarSearch.manhattan_distance(x, y, min_dist_1.x, min_dist_1.y):
+                    min_dist_2 = copy.copy(min_dist_1)
                     min_dist_1 = white_pieces[i]
 
                 else:
                     min_dist_2 = white_pieces[i]
             i += 1
 
-        return piece.x_coordinate, piece.y_coordinate, min_dist_1.x_coordinate, min_dist_1.y_coordinate, min_dist_2.x_coordinate, min_dist_2.y_coordinate
+        return min_dist_1, min_dist_2
+
+    # Method for massacre mode
+    def massacre(self):
+
+        available_coods = self.check_takeable(self.black_pieces[0])
+        x_dir = available_coods[0]
+        y_dir = available_coods[1]
+        best_dir, piece_1, piece_2 = self.choose_best_dir(x_dir, y_dir)
+
+        # initialises A* Search Class
+        a_star_algo_1 = AStarSearch(self.squares, board_width, board_length)
+
+        # Does A* search
+
+        self.squares = a_star_algo_1.search(self.squares[best_dir[1] * board_width + best_dir[0]],
+                           self.squares[piece_1.x * board_width + piece_1.y])
+        a_star_algo_2 = AStarSearch(self.squares, board_width, board_length)
+        self.squares = a_star_algo_2.search(self.squares[best_dir[3] * board_width + best_dir[2]],
+                           self.squares[piece_2.x * board_width + piece_2.y])
 
 
 
+    # Check which of the two positions are available for taking the piece
     def check_takeable(self, bp):
-
         board = self.board
+        available_coods = []
 
-        if board[bp.y_coordinates + 1][bp.x_coordinates] != "-":
+        # Check if takeable in x direction
+        if 1 <= bp.x <= 6:
+            # Check if both spaces in x direction free
+            if board[bp.y][bp.x - 1] == "-" and board[bp.y][bp.x + 1] == "-":
+                available_coods.append([bp.y, bp.x - 1, bp.y, bp.x + 1])
 
-        """
+            elif board[bp.y][bp.x - 1] == "-" and board[bp.y][bp.x + 1] == "O":
+                available_coods.append([bp.y, bp.x - 1, bp.y, bp.x + 1])
 
+            elif board[bp.y][bp.x - 1] == "O" and board[bp.y][bp.x + 1] == "-":
+                available_coods.append([bp.y, bp.x - 1, bp.y, bp.x + 1])
+            else:
+                available_coods.append([])
 
+        # Check if takeable in y direction
+        if 1 <= bp.y <= 6:
+            # Check if both spaces in y direction free
+            if board[bp.y - 1][bp.x] == "-" and board[bp.y + 1][bp.x] == "-":
+                available_coods.append([bp.y - 1, bp.x, bp.y + 1, bp.x])
 
+            # Check if one space already covered by white piece and other free
+            elif board[bp.y - 1][bp.x] == "-" and board[bp.y + 1][bp.x] == "O":
+                available_coods.append([bp.y - 1, bp.x, bp.y + 1, bp.x])
 
+            elif board[bp.y - 1][bp.x] == "O" and board[bp.y + 1][bp.x] == "-":
+                available_coods.append([bp.y - 1, bp.x, bp.y + 1, bp.x])
+
+            else:
+                available_coods.append([])
+
+        return available_coods
+
+    def choose_best_dir(self, x_dir, y_dir):
+
+        if not x_dir and not y_dir:
+            return None
+
+        elif not x_dir:
+            piece3, piece4 = self.closest_piece(y_dir[1], y_dir[0])
+            return y_dir, piece3, piece4
+
+        elif not y_dir:
+            piece1, piece2 = self.closest_piece(x_dir[1], x_dir[0])
+            return x_dir, piece1, piece2
+
+        piece1, piece2 = self.closest_piece(x_dir[1], x_dir[0])
+
+        x_dist_1 = AStarSearch.manhattan_distance(x_dir[1], piece1.x, x_dir[0], piece1.y)
+        x_dist_2 = AStarSearch.manhattan_distance(x_dir[3], piece2.x, x_dir[2], piece2.y)
+
+        piece3, piece4 = self.closest_piece(y_dir[1], y_dir[0])
+
+        y_dist_1 = AStarSearch.manhattan_distance(y_dir[1], piece3.x, y_dir[0], piece3.y)
+        y_dist_2 = AStarSearch.manhattan_distance(y_dir[3], piece4.x, y_dir[2], piece4.y)
+
+        if x_dist_1 + x_dist_2 <= y_dist_1 + y_dist_2:
+
+            return x_dir, piece1, piece2
+
+        else:
+            return y_dir, piece3, piece4
 
 
 
