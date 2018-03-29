@@ -141,7 +141,6 @@ class Board:
             y_dir = available_coods[1]
 
             best_dir, piece_1, piece_2 = self.choose_best_dir(x_dir, y_dir)
-    
             # initialises A* Search Class
             a_star_algo = AStarSearch(board_width, board_length)
             # keeps copy of current pieces original location
@@ -155,10 +154,15 @@ class Board:
             old_x, old_y = piece_2.x, piece_2.y
             new_location = a_star_algo.search(self.squares[best_dir[3] * board_width + best_dir[2]],
                                                 self.squares[piece_2.x * board_width + piece_2.y], self.squares)
+            if new_location is None:
+                self.squares[item.x * board_width + item.y].value = "-"
+                print("END")
+                continue
 
             self.update_pieces(new_location, old_x, old_y)
             # removes dead black piece
-            self.squares[item.x * board_width + item.y].value = "-"
+
+            print("END")
 
     def update_pieces(self, new_location, old_x, old_y):
 
@@ -168,7 +172,8 @@ class Board:
                 item.x = new_location.x
                 item.y = new_location.y
 
-        self.squares[old_x * board_width + old_y].value = "-"
+        if old_x != new_location.x and old_x != new_location.x:
+            self.squares[old_x * board_width + old_y].value = "-"
 
     # Check which of the two positions are available for taking the piece
     def check_takeable(self, bp):

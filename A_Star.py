@@ -8,7 +8,6 @@ class AStarSearch:
         self.board_width = board_width
         self.board_length = board_length
 
-
     @staticmethod
     def manhattan_distance(x1, y1, x2, y2):
         dist_x = fabs(x1 - x2)
@@ -65,7 +64,6 @@ class AStarSearch:
         path = []
 
         while current_square.x != start_goal.x or current_square.y != start_goal.y:
-
             coods = (current_square.x, current_square.y)
             parent_square = current_square.parent
             parent_coods = (parent_square.x, parent_square.y)
@@ -129,6 +127,7 @@ class AStarSearch:
                     else:
                         self.update_position_adjacent(square, item, goal_square)
                         heapq.heappush(unvisited, (item.f, item))
+
         return end_square
 
     def blocked(self, square, squares):

@@ -10,7 +10,7 @@ class Square:
         self.h = 0
 
     def __lt__(self, other):  # comparison method for priority queue
-        return self.f < other.f
+        return self.f > other.f
 
     def set_x(self, x):
         self.x = x
