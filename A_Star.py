@@ -8,11 +8,10 @@ board_length = 8
 
 class AStarSearch:
 
-    def __init__(self, squares, board_width, board_length):
+    def __init__(self, board_width, board_length):
         self.opened = []
         heapq.heapify(self.opened)
         self.closed = []
-        self.squares = squares
 
     @staticmethod
     def manhattan_distance(x1, y1, x2, y2):
@@ -21,45 +20,45 @@ class AStarSearch:
         return dist_x + dist_y
 
     #Issue in getSquare for move3 in massacre mode
-    def get_square(self, x, y):
-        return self.squares[x * board_width + y]
+    def get_square(self, x, y, squares):
+        return squares[x * board_width + y]
 
     # Gives a list of squares adjacent to current
-    def get_adjacent_squares(self, square):
+    def get_adjacent_squares(self, square, squares):
 
         list_of_squares = []
-        adj_left = self.get_square(square.x - 1, square.y)
-        adj_right = self.get_square(square.x + 1, square.y)
-        adj_up = self.get_square(square.x, square.y - 1)
-        adj_down = self.get_square(square.x, square.y + 1)
+        adj_left = self.get_square(square.x - 1, square.y, squares)
+        adj_right = self.get_square(square.x + 1, square.y, squares)
+        adj_up = self.get_square(square.x, square.y - 1, squares)
+        adj_down = self.get_square(square.x, square.y + 1, squares)
 
         if square.x > 0:
             if not self.blocked(adj_left):
                 list_of_squares.append(adj_left)
 
-            elif 1 < square.x < 6 and not self.blocked(self.get_square(square.x - 2, square.y)):
-                list_of_squares.append(self.get_square(square.x - 2, square.y))
+            elif 1 < square.x < 6 and not self.blocked(self.get_square(square.x - 2, square.y, squares)):
+                list_of_squares.append(self.get_square(square.x - 2, square.y, squares))
 
         if square.y > 0:
             if not self.blocked(adj_up):
                 list_of_squares.append(adj_up)
 
-            elif 1 < square.y < 6 and not self.blocked(self.get_square(square.x, square.y - 2)):
-                list_of_squares.append(self.get_square(square.x, square.y - 2))
+            elif 1 < square.y < 6 and not self.blocked(self.get_square(square.x, square.y - 2, squares)):
+                list_of_squares.append(self.get_square(square.x, square.y - 2, squares))
 
         if square.x < board_width - 1:
             if not self.blocked(adj_right):
                 list_of_squares.append(adj_right)
 
-            elif 1 < square.x < 6 and not self.blocked(self.get_square(square.x + 2, square.y)):
-                list_of_squares.append(self.get_square(square.x + 2, square.y))
+            elif 1 < square.x < 6 and not self.blocked(self.get_square(square.x + 2, square.y, squares)):
+                list_of_squares.append(self.get_square(square.x + 2, square.y, squares))
 
         if square.y < board_width - 1:
             if not self.blocked(adj_down):
                 list_of_squares.append(adj_down)
 
-            elif 1 < square.x < 6 and not self.blocked(self.get_square(square.x, square.y + 2)):
-                list_of_squares.append(self.get_square(square.x, square.y + 2))
+            elif 1 < square.x < 6 and not self.blocked(self.get_square(square.x, square.y + 2, squares)):
+                list_of_squares.append(self.get_square(square.x, square.y + 2, squares))
 
         return list_of_squares
 
@@ -70,6 +69,7 @@ class AStarSearch:
         path = []
 
         while current_square.x != start_goal.x or current_square.y != start_goal.y:
+
             coods = (current_square.x, current_square.y)
             parent_square = current_square.parent
             parent_coods = (parent_square.x, parent_square.y)
@@ -91,7 +91,7 @@ class AStarSearch:
         adjacent_square.parent = current_square
 
     #Performs the actual A* Search
-    def search(self, goal_square, current_square):
+    def search(self, goal_square, current_square, squares):
 
         end_square = None
         # Pushes the heap for the first element
@@ -108,13 +108,14 @@ class AStarSearch:
 
             # Check for goal state
             if self.state(square, goal_square):
+                print(str((square.x, square.y)))
                 self.print_moves(square, start_square)
-                self.update_board(self.squares, square, start_square)
+                self.update_board(squares, square, start_square)
                 end_square = square
                 break
 
             # Gets list of adjacent squares to current
-            adjacent_squares = self.get_adjacent_squares(square)
+            adjacent_squares = self.get_adjacent_squares(square, squares)
 
             # Checks each of the adjacent squares for the best move
             for i in range(len(adjacent_squares)):
@@ -133,11 +134,11 @@ class AStarSearch:
                         self.update_position_adjacent(square, item, goal_square)
                         heapq.heappush(self.opened, (item.f, item))
 
-        return self.squares, end_square
+        return squares, end_square
 
     def update_board(self, squares, end_square, start_square):
-        self.squares[end_square.x * board_width + end_square.y].set_value("O")
-        self.squares[start_square.x * board_width + start_square.y].set_value("-")
+        squares[end_square.x * board_width + end_square.y].set_value("O")
+        squares[start_square.x * board_width + start_square.y].set_value("-")
 
 
     @staticmethod
