@@ -142,21 +142,21 @@ class Board:
             best_dir, piece_1, piece_2 = self.choose_best_dir(x_dir, y_dir)
 
             # initialises A* Search Class
-            a_star_algo_1 = AStarSearch(board_width, board_length)
+            a_star_algo = AStarSearch(board_width, board_length)
 
             # Does A* search
-            self.squares, new_location = a_star_algo_1.search(self.squares[best_dir[1] * board_width + best_dir[0]],
+            self.squares, new_location = a_star_algo.search(self.squares[best_dir[1] * board_width + best_dir[0]],
                                                 self.squares[piece_1.x * board_width + piece_1.y], self.squares)
 
             self.update_pieces(new_location, piece_1)
 
-            self.squares, new_location = a_star_algo_1.search(self.squares[best_dir[3] * board_width + best_dir[2]],
+            self.squares, new_location = a_star_algo.search(self.squares[best_dir[3] * board_width + best_dir[2]],
                                                 self.squares[piece_2.x * board_width + piece_2.y], self.squares)
             self.update_pieces(new_location, piece_2)
 
-            self.squares[item.x * board_width + item.y].value = "-"
+            #self.squares[item.x * board_width + item.y].value = "-"
 
-            print(self.squares[item.x * board_width + item.y].value)
+            #print(self.squares[item.x * board_width + item.y].value)
 
     def update_pieces(self, new_location, piece):
 

@@ -3,15 +3,13 @@ from math import fabs
 import copy
 from Square import Square
 
-board_width = 8
-board_length = 8
 
 class AStarSearch:
 
     def __init__(self, board_width, board_length):
-        self.opened = []
-        heapq.heapify(self.opened)
-        self.closed = []
+        self.board_width = board_width
+        self.board_length = board_length
+
 
     @staticmethod
     def manhattan_distance(x1, y1, x2, y2):
@@ -21,7 +19,7 @@ class AStarSearch:
 
     #Issue in getSquare for move3 in massacre mode
     def get_square(self, x, y, squares):
-        return squares[x * board_width + y]
+        return squares[x * self.board_width + y]
 
     # Gives a list of squares adjacent to current
     def get_adjacent_squares(self, square, squares):
@@ -46,14 +44,14 @@ class AStarSearch:
             elif 1 < square.y < 6 and not self.blocked(self.get_square(square.x, square.y - 2, squares)):
                 list_of_squares.append(self.get_square(square.x, square.y - 2, squares))
 
-        if square.x < board_width - 1:
+        if square.x < self.board_width - 1:
             if not self.blocked(adj_right):
                 list_of_squares.append(adj_right)
 
             elif 1 < square.x < 6 and not self.blocked(self.get_square(square.x + 2, square.y, squares)):
                 list_of_squares.append(self.get_square(square.x + 2, square.y, squares))
 
-        if square.y < board_width - 1:
+        if square.y < self.board_width - 1:
             if not self.blocked(adj_down):
                 list_of_squares.append(adj_down)
 
@@ -71,6 +69,7 @@ class AStarSearch:
         while current_square.x != start_goal.x or current_square.y != start_goal.y:
 
             coods = (current_square.x, current_square.y)
+            print(str(coods))
             parent_square = current_square.parent
             parent_coods = (parent_square.x, parent_square.y)
             current_square = current_square.parent
@@ -93,22 +92,25 @@ class AStarSearch:
     #Performs the actual A* Search
     def search(self, goal_square, current_square, squares):
 
+        unvisited = []
+        visited = []
+
         end_square = None
         # Pushes the heap for the first element
-        heapq.heappush(self.opened, (current_square.f, current_square))
+        heapq.heappush(unvisited, (current_square.f, current_square))
 
         # keeps a copy of the start square
         start_square = copy.copy(current_square)
 
-        while len(self.opened):
+        while len(unvisited):
             # Get first element from heap
-            f, square = heapq.heappop(self.opened)
+            f, square = heapq.heappop(unvisited)
             # Show that this element has been visited
-            self.closed.append(square)
+            visited.append(square)
 
             # Check for goal state
             if self.state(square, goal_square):
-                print(str((square.x, square.y)))
+                print(str((square.x, square.y)) + " " + "HELLO")
                 self.print_moves(square, start_square)
                 self.update_board(squares, square, start_square)
                 end_square = square
@@ -120,25 +122,24 @@ class AStarSearch:
             # Checks each of the adjacent squares for the best move
             for i in range(len(adjacent_squares)):
                 item = adjacent_squares[i]
-                if not self.blocked(item) and item not in self.closed:
-                    if (item.f, item) in self.opened:
+                if item not in visited and  not self.blocked(item):
+                    if (item.f, item) in unvisited:
 
                         # If adj cell is open, check if current
                         # path is better than
                         # previously recorded path for this cell
-                        if item.g > square.g + 1:
-
+                        if item.g < square.g + 1:
                             self.update_position_adjacent(square, item, goal_square)
 
                     else:
                         self.update_position_adjacent(square, item, goal_square)
-                        heapq.heappush(self.opened, (item.f, item))
+                        heapq.heappush(unvisited, (item.f, item))
 
         return squares, end_square
 
     def update_board(self, squares, end_square, start_square):
-        squares[end_square.x * board_width + end_square.y].set_value("O")
-        squares[start_square.x * board_width + start_square.y].set_value("-")
+        squares[end_square.x * self.board_width + end_square.y].set_value("O")
+        squares[start_square.x * self.board_width + start_square.y].set_value("-")
 
 
     @staticmethod
