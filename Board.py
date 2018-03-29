@@ -134,13 +134,14 @@ class Board:
         for item in self.black_pieces:
 
             available_coods = self.check_takeable(item)
-            x_dir = available_coods[0]
-            y_dir = available_coods[1]
 
             if available_coods == [[], []]:
                 continue
-            best_dir, piece_1, piece_2 = self.choose_best_dir(x_dir, y_dir)
+            x_dir = available_coods[0]
+            y_dir = available_coods[1]
 
+            best_dir, piece_1, piece_2 = self.choose_best_dir(x_dir, y_dir)
+    
             # initialises A* Search Class
             a_star_algo = AStarSearch(board_width, board_length)
             # keeps copy of current pieces original location

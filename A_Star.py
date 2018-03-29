@@ -23,12 +23,9 @@ class AStarSearch:
     def get_adjacent_squares(self, square, squares):
 
         list_of_squares = []
-        adj_left = self.get_square(square.x - 1, square.y, squares)
-        adj_right = self.get_square(square.x + 1, square.y, squares)
-        adj_up = self.get_square(square.x, square.y - 1, squares)
-        adj_down = self.get_square(square.x, square.y + 1, squares)
 
         if square.x > 0:
+            adj_left = self.get_square(square.x - 1, square.y, squares)
             if not self.blocked(adj_left, squares):
                 list_of_squares.append(adj_left)
 
@@ -36,6 +33,7 @@ class AStarSearch:
                 list_of_squares.append(self.get_square(square.x - 2, square.y, squares))
 
         if square.y > 0:
+            adj_up = self.get_square(square.x, square.y - 1, squares)
             if not self.blocked(adj_up, squares):
                 list_of_squares.append(adj_up)
 
@@ -43,6 +41,7 @@ class AStarSearch:
                 list_of_squares.append(self.get_square(square.x, square.y - 2, squares))
 
         if square.x < self.board_width - 1:
+            adj_right = self.get_square(square.x + 1, square.y, squares)
             if not self.blocked(adj_right, squares):
                 list_of_squares.append(adj_right)
 
@@ -50,6 +49,7 @@ class AStarSearch:
                 list_of_squares.append(self.get_square(square.x + 2, square.y, squares))
 
         if square.y < self.board_width - 1:
+            adj_down = self.get_square(square.x, square.y + 1, squares)
             if not self.blocked(adj_down, squares):
                 list_of_squares.append(adj_down)
 
