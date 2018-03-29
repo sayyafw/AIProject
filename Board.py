@@ -136,6 +136,9 @@ class Board:
             available_coods = self.check_takeable(item)
             x_dir = available_coods[0]
             y_dir = available_coods[1]
+
+            if available_coods == [[],[]]:
+                continue
             best_dir, piece_1, piece_2 = self.choose_best_dir(x_dir, y_dir)
 
             # initialises A* Search Class
@@ -165,43 +168,38 @@ class Board:
     # Check which of the two positions are available for taking the piece
     def check_takeable(self, bp):
         squares = self.squares
-        available_coods = []
+        available_coods = [[], []]
 
         # Check if takeable in x direction
         if 1 <= bp.x <= 6:
             # Check if both spaces in x direction free
             if squares[(bp.x-1) * board_width + bp.y].value == "-" and \
                     squares[(bp.x + 1) * board_width + bp.y].value == "-":
-                available_coods.append([bp.y, bp.x - 1, bp.y, bp.x + 1])
+                available_coods[0] = [bp.y, bp.x - 1, bp.y, bp.x + 1]
 
             elif squares[(bp.x-1) * board_width + bp.y].value == "O" and \
-                    squares[(bp.x + 1) * board_width + bp.y].value =="-":
-                available_coods.append([bp.y, bp.x - 1, bp.y, bp.x + 1])
+                    squares[(bp.x + 1) * board_width + bp.y].value == "-":
+                available_coods[0] = [bp.y, bp.x - 1, bp.y, bp.x + 1]
 
             elif squares[(bp.x-1) * board_width + bp.y].value == "-" and \
                     squares[(bp.x + 1) * board_width + bp.y].value =="O":
-                available_coods.append([bp.y, bp.x - 1, bp.y, bp.x + 1])
-            else:
-                available_coods.append([])
+                available_coods[0] = [bp.y, bp.x - 1, bp.y, bp.x + 1]
 
         # Check if takeable in y direction
         if 1 <= bp.y <= 6:
             # Check if both spaces in y direction free
             if squares[bp.x * board_width + (bp.y - 1)].value == "-" and \
                     squares[bp.x * board_width + (bp.y + 1)].value =="-":
-                available_coods.append([bp.y - 1, bp.x, bp.y + 1, bp.x])
+                available_coods[1] = [bp.y - 1, bp.x, bp.y + 1, bp.x]
 
             # Check if one space already covered by white piece and other free
             elif squares[bp.x * board_width + (bp.y - 1)].value == "O" and \
                     squares[bp.x * board_width + (bp.y + 1)].value =="-":
-                available_coods.append([bp.y - 1, bp.x, bp.y + 1, bp.x])
+                available_coods[1] = [bp.y - 1, bp.x, bp.y + 1, bp.x]
 
             elif squares[bp.x * board_width + (bp.y - 1)].value == "-" and \
                     squares[bp.x * board_width + (bp.y + 1)].value =="O":
-                available_coods.append([bp.y - 1, bp.x, bp.y + 1, bp.x])
-
-            else:
-                available_coods.append([])
+                available_coods[1] = [bp.y - 1, bp.x, bp.y + 1, bp.x]
 
         return available_coods
 
