@@ -14,12 +14,14 @@ class AStarSearch:
         self.closed = []
         self.squares = squares
 
+    #calculate the manhattan distance between 2 pieces
     @staticmethod
     def manhattan_distance(x1, y1, x2, y2):
         dist_x = fabs(x1 - x2)
         dist_y = fabs(y1 - y2)
         return dist_x + dist_y
 
+    #get the square
     def get_square(self, x, y):
         return self.squares[x * board_width + y]
 
@@ -28,13 +30,14 @@ class AStarSearch:
 
         list_of_squares = []
 
-        if square.x > 0:
+        #check if each axis is next to an edge, if not, put it into the list
+        if square.x > 0: #0+boundry
             list_of_squares.append(self.get_square(square.x - 1, square.y))
 
         if square.y > 0:
             list_of_squares.append(self.get_square(square.x, square.y - 1))
 
-        if square.x < board_width - 1:
+        if square.x < board_width - 1: #-1-boundry
             list_of_squares.append(self.get_square(square.x + 1, square.y))
 
         if square.y < board_length - 1 :
@@ -48,6 +51,7 @@ class AStarSearch:
         current_square = square
         path = []
 
+        #while the piece is not at it's destination
         while current_square.x != start_goal.x or current_square.y != start_goal.y:
             coods = (current_square.x, current_square.y)
             parent_square = current_square.parent
@@ -83,12 +87,13 @@ class AStarSearch:
     def search(self, goal_square, current_square):
 
         end_square = None
-        # Pushes the heap for the first element
+        # Pushes into the heap for the first element
         heapq.heappush(self.opened, (current_square.f, current_square))
 
         # keeps a copy of the start square
         start_square = copy.copy(current_square)
 
+        #while opened is not empty
         while len(self.opened):
 
             # Get first element from heap
@@ -96,41 +101,47 @@ class AStarSearch:
             # Show that this element has been visited
             self.closed.append(square)
 
-            # Check for goal state
+            # Check if we are at the goal state already.
             if self.state(square, goal_square):
+                #return the path it took to the goal state
                 self.print_moves(square, start_square)
                 self.update_board(self.squares, square, start_square)
                 end_square = square
                 break
 
-            # Gets list of adjacent squares to current
+            # Not at the goal state, keep moving
+            # Gets list of adjacent squares of the current piece
             adjacent_squares = self.get_adjacent_squares(square)
 
             # Checks each of the adjacent squares for the best move
             for i in range(len(adjacent_squares)):
+                #for each adjacent squares
                 item = adjacent_squares[i]
+                #if the path is not blocked, and it has yet been seen
                 if not self.blocked(item, self.squares) and item not in self.closed:
+                    #man, variable f.
                     if (item.f, item) in self.opened:
 
-                        # If adj cell is open, check if current
-                        # path is better than
+                        # If adj cell is open, check if current path is better than
                         # previously recorded path for this cell
+                        #man, g
                         if item.g > square.g + 1:
                             self.update_position_adjacent(square, item,  goal_square)
 
                     else:
                         self.update_position_adjacent(square, item, goal_square)
                         heapq.heappush(self.opened, (item.f, item))
+        #return this squre and goal                
         return self.squares, end_square
 
-    # Check if current square is blocked
-
+        
+    #update the stat of the board
     def update_board(self, squares, end_square, start_square):
 
         self.squares[end_square.x * board_width + end_square.y].set_value("O")
         self.squares[start_square.x * board_width + start_square.y].set_value("-")
 
-
+    # Check if current square is blocked
     @staticmethod
     def blocked(square, board):
 
@@ -139,7 +150,7 @@ class AStarSearch:
             return True
         return False
 
-    # Check for goal state
+    # Check if the current square is the goal state
     @staticmethod
     def state(current_square, goal_square):
 
