@@ -45,15 +45,20 @@ class A_Star:
     def print_moves(self, square, start_goal):
 
         current_square = square
-        print((current_square.x, start_goal.x))
+        path = []
         while current_square.x != start_goal.x or current_square.y != start_goal.y:
             coods = (current_square.x, current_square.y)
             parent_square = current_square.parent
             parent_coods = (parent_square.x, parent_square.y)
-            print(str(parent_coods))
-            print(" -> ")
-            print(str(coods))
             current_square = current_square.parent
+            path.append(str(parent_coods) + " -> " + str(coods))
+
+        i = len(path) - 1
+
+        while i >= 0:
+            print(path[i])
+            i -= 1
+
 
     def update_position_adjacent(self, current_square, adjacent_square, goal_square):
 
