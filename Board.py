@@ -7,8 +7,10 @@ import copy
 
 """ Board Class. Reads the board, stores board information
 """
-class Board:
+board_width = 8
+board_length = 8
 
+class Board:
     # initiate Board class
     def __init__(self):
         self.board = [] # holds board string
@@ -16,8 +18,6 @@ class Board:
         self.white_pieces = []
         self.black_pieces = []
         self.squares = [] # holds square class for A* search
-        self.board_width = 8
-        self.board_length = 8
 
     # Populate board with input string
     def populate_board(self):
@@ -131,18 +131,23 @@ class Board:
     # Method for massacre mode
     def massacre(self):
 
-        piece_1, piece_2 = self.closest_piece(self.black_pieces[0].x, self.black_pieces[0].y)
         available_coods = self.check_takeable(self.black_pieces[0])
         x_dir = available_coods[0]
         y_dir = available_coods[1]
-        #best_dir = self.choose_best_dir(x_dir, y_dir)
+        best_dir, piece_1, piece_2 = self.choose_best_dir(x_dir, y_dir)
 
         # initialises A* Search Class
-        a_star_algo = AStarSearch(self.squares, self.board_width, self.board_length)
+        a_star_algo_1 = AStarSearch(self.squares, board_width, board_length)
 
         # Does A* search
-        a_star_algo.search(self.squares[self.black_pieces[0].x*self.board_width + self.black_pieces[0].y+1], self.board,
-                    self.squares[piece_1.x * self.board_width + piece_1.y])
+
+        self.squares = a_star_algo_1.search(self.squares[best_dir[1] * board_width + best_dir[0]],
+                           self.squares[piece_1.x * board_width + piece_1.y])
+        a_star_algo_2 = AStarSearch(self.squares, board_width, board_length)
+        self.squares = a_star_algo_2.search(self.squares[best_dir[3] * board_width + best_dir[2]],
+                           self.squares[piece_2.x * board_width + piece_2.y])
+
+
 
     # Check which of the two positions are available for taking the piece
     def check_takeable(self, bp):
@@ -156,10 +161,10 @@ class Board:
                 available_coods.append([bp.y, bp.x - 1, bp.y, bp.x + 1])
 
             elif board[bp.y][bp.x - 1] == "-" and board[bp.y][bp.x + 1] == "O":
-                available_coods.append([bp.y, bp.x - 1])
+                available_coods.append([bp.y, bp.x - 1, bp.y, bp.x + 1])
 
             elif board[bp.y][bp.x - 1] == "O" and board[bp.y][bp.x + 1] == "-":
-                available_coods.append([bp.y, bp.x + 1])
+                available_coods.append([bp.y, bp.x - 1, bp.y, bp.x + 1])
             else:
                 available_coods.append([])
 
@@ -171,10 +176,10 @@ class Board:
 
             # Check if one space already covered by white piece and other free
             elif board[bp.y - 1][bp.x] == "-" and board[bp.y + 1][bp.x] == "O":
-                available_coods.append([bp.y - 1, bp.x])
+                available_coods.append([bp.y - 1, bp.x, bp.y + 1, bp.x])
 
             elif board[bp.y - 1][bp.x] == "O" and board[bp.y + 1][bp.x] == "-":
-                available_coods.append([bp.y + 1, bp.x])
+                available_coods.append([bp.y - 1, bp.x, bp.y + 1, bp.x])
 
             else:
                 available_coods.append([])
@@ -186,16 +191,30 @@ class Board:
         if not x_dir and not y_dir:
             return None
 
-        elif not x_dir or len(y_dir) < len(x_dir):
-            return y_dir
+        elif not x_dir:
+            piece3, piece4 = self.closest_piece(y_dir[1], y_dir[0])
+            return y_dir, piece3, piece4
 
-        elif not y_dir or len(x_dir) <= len(y_dir):
-            return x_dir
+        elif not y_dir:
+            piece1, piece2 = self.closest_piece(x_dir[1], x_dir[0])
+            return x_dir, piece1, piece2
+
+        piece1, piece2 = self.closest_piece(x_dir[1], x_dir[0])
+
+        x_dist_1 = AStarSearch.manhattan_distance(x_dir[1], piece1.x, x_dir[0], piece1.y)
+        x_dist_2 = AStarSearch.manhattan_distance(x_dir[3], piece2.x, x_dir[2], piece2.y)
+
+        piece3, piece4 = self.closest_piece(y_dir[1], y_dir[0])
+
+        y_dist_1 = AStarSearch.manhattan_distance(y_dir[1], piece3.x, y_dir[0], piece3.y)
+        y_dist_2 = AStarSearch.manhattan_distance(y_dir[3], piece4.x, y_dir[2], piece4.y)
+
+        if x_dist_1 + x_dist_2 <= y_dist_1 + y_dist_2:
+
+            return x_dir, piece1, piece2
 
         else:
-            return x_dir
-
-
+            return y_dir, piece3, piece4
 
 
 
