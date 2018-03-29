@@ -69,7 +69,6 @@ class AStarSearch:
         while current_square.x != start_goal.x or current_square.y != start_goal.y:
 
             coods = (current_square.x, current_square.y)
-            print(str(coods))
             parent_square = current_square.parent
             parent_coods = (parent_square.x, parent_square.y)
             current_square = current_square.parent
@@ -110,7 +109,6 @@ class AStarSearch:
 
             # Check for goal state
             if self.state(square, goal_square):
-                print(str((square.x, square.y)) + " " + "HELLO")
                 self.print_moves(square, start_square)
                 self.update_board(squares, square, start_square)
                 end_square = square
