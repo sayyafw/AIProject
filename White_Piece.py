@@ -5,3 +5,5 @@ class WhitePiece:
         self.x = x
         self.y = y
 
+    def set_x(self, x):
+        self.x = x

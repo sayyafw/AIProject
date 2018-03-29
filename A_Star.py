@@ -81,6 +81,8 @@ class AStarSearch:
 
     #Performs the actual A* Search
     def search(self, goal_square, current_square):
+
+        end_square = None
         # Pushes the heap for the first element
         heapq.heappush(self.opened, (current_square.f, current_square))
 
@@ -97,11 +99,12 @@ class AStarSearch:
             # Check for goal state
             if self.state(square, goal_square):
                 self.print_moves(square, start_square)
+                self.update_board(self.squares, square, start_square)
+                end_square = square
                 break
 
             # Gets list of adjacent squares to current
             adjacent_squares = self.get_adjacent_squares(square)
-
 
             # Checks each of the adjacent squares for the best move
             for i in range(len(adjacent_squares)):
@@ -118,14 +121,21 @@ class AStarSearch:
                     else:
                         self.update_position_adjacent(square, item, goal_square)
                         heapq.heappush(self.opened, (item.f, item))
-        return self.squares
+        return self.squares, end_square
 
     # Check if current square is blocked
+
+    def update_board(self, squares, end_square, start_square):
+
+        self.squares[end_square.x * board_width + end_square.y].set_value("O")
+        self.squares[start_square.x * board_width + start_square.y].set_value("-")
+
+
     @staticmethod
     def blocked(square, board):
 
         if square.value!= "-":
-            #print(str((square.x, square.y)))
+
             return True
         return False
 
@@ -143,15 +153,11 @@ class AStarSearch:
     @staticmethod
     def check_jump(square, board, direction):
 
-        print(str((square.x, square.y)))
-
         if (square.x > 6 or square.x < 1) and (square.y > 6 or square.y < 1):
-            print(False)
             return False
 
         if direction == 0:
             if square.x > 0 and board[square.y][square.x - 1] == "-":
-                print(True)
                 return True
 
         if direction == 1:
@@ -161,13 +167,10 @@ class AStarSearch:
 
         if direction == 2:
             if square.x < 7 and board[square.y][square.x + 1] == "-":
-                print(True)
                 return True
 
         if direction == 3:
             if square.y < 7 and board[square.y + 1][square.x] == "-":
-                print(True)
                 return True
-        print(False)
         return False
 

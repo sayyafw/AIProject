@@ -12,4 +12,12 @@ class Square:
     def __lt__(self, other):  # comparison method for priority queue
         return self.f < other.f
 
+    def set_x(self, x):
+        self.x = x
+
+    def set_y(self, y):
+        self.y = y
+
+    def set_value(self, value):
+        self.value = value
 
