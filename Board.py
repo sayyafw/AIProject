@@ -2,7 +2,7 @@ from White_Piece import WhitePiece
 from Black_Piece import BlackPiece
 from math import fabs
 from Square import Square
-from A_Star import A_Star
+from A_Star import AStarSearch
 import copy
 
 """ Board Class. Reads the board, stores board information
@@ -15,7 +15,7 @@ class Board:
         self.mode = ""
         self.white_pieces = []
         self.black_pieces = []
-        self.squares = [] #holds square class for A* search
+        self.squares = [] # holds square class for A* search
         self.board_width = 8
         self.board_length = 8
 
@@ -38,7 +38,7 @@ class Board:
         self.print_board()
 
         # Read the rows and columns of the board. Add each square to squares list. If white or black piece, add to
-        #requisite list
+        # requisite list
         for i in range(len(board)):
             for j in range(len(board[i])):
                 self.squares.append(Square(i, j, board[j][i]))
@@ -99,12 +99,12 @@ class Board:
 
         return total_moves
 
-    #Finds the two closest white pieces to a given coordinate. Smallest possible distance kept at min_dist_1
+    # Finds the two closest white pieces to a given coordinate. Smallest possible distance kept at min_dist_1
     def closest_piece(self, x, y):
         white_pieces = self.white_pieces
 
-        if A_Star.manhattan_distance(x, y, white_pieces[0].x, white_pieces[0].y) > \
-                A_Star.manhattan_distance(x, y, white_pieces[1].x, white_pieces[1].y):
+        if AStarSearch.manhattan_distance(x, y, white_pieces[0].x, white_pieces[0].y) > \
+                AStarSearch.manhattan_distance(x, y, white_pieces[1].x, white_pieces[1].y):
 
             min_dist_1 = white_pieces[1]
             min_dist_2 = white_pieces[0]
@@ -116,9 +116,9 @@ class Board:
         i = 2
 
         while i < len(self.white_pieces):
-            manhattan_dist = A_Star.manhattan_distance(x, y, white_pieces[i].x, white_pieces[i].y)
-            if manhattan_dist < A_Star.manhattan_distance(x, y, min_dist_2.x, min_dist_2.y):
-                if manhattan_dist < A_Star.manhattan_distance(x, y, min_dist_1.x, min_dist_1.y):
+            manhattan_dist = AStarSearch.manhattan_distance(x, y, white_pieces[i].x, white_pieces[i].y)
+            if manhattan_dist < AStarSearch.manhattan_distance(x, y, min_dist_2.x, min_dist_2.y):
+                if manhattan_dist < AStarSearch.manhattan_distance(x, y, min_dist_1.x, min_dist_1.y):
                     min_dist_2 = copy.copy(min_dist_1)
                     min_dist_1 = white_pieces[i]
 
@@ -128,7 +128,7 @@ class Board:
 
         return min_dist_1, min_dist_2
 
-    #Method for massacre mode
+    # Method for massacre mode
     def massacre(self):
 
         piece_1, piece_2 = self.closest_piece(self.black_pieces[0].x, self.black_pieces[0].y)
@@ -138,12 +138,11 @@ class Board:
         #best_dir = self.choose_best_dir(x_dir, y_dir)
 
         # initialises A* Search Class
-        a_star_algo = A_Star(self.squares, self.board_width, self.board_length)
+        a_star_algo = AStarSearch(self.squares, self.board_width, self.board_length)
 
         # Does A* search
         a_star_algo.search(self.squares[self.black_pieces[0].x*self.board_width + self.black_pieces[0].y+1], self.board,
-                    self.squares[piece_2.x * self.board_width + piece_2.y])
-
+                    self.squares[piece_1.x * self.board_width + piece_1.y])
 
     # Check which of the two positions are available for taking the piece
     def check_takeable(self, bp):
@@ -181,7 +180,6 @@ class Board:
                 available_coods.append([])
 
         return available_coods
-
 
     def choose_best_dir(self, x_dir, y_dir):
 
